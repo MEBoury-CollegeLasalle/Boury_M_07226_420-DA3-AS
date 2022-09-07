@@ -56,7 +56,7 @@ namespace Boury_M_07226_420_DA3_AS.Utils {
         }
 
 
-        public static TConnection GetDefaultFileDbConnection() {
+        public static TConnection GetDefaultFileDbConnectionStatic() {
 
             string dbFilePath = DirectoryUtils.CODEBASE_ROOT_DIRECTORY + Path.DirectorySeparatorChar + DEFAULT_DBFILE_NAME;
 
