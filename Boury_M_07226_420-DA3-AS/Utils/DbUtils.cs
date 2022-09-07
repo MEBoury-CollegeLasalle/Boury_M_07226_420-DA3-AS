@@ -41,10 +41,11 @@ namespace Boury_M_07226_420_DA3_AS.Utils {
 
 
         /// <summary>
-        /// 
+        /// Generates a connection string based on a dictionary of key-value pairs representing the 
+        /// properties of the connection string to be generated.
         /// </summary>
-        /// <param name="connStringKeyValuePairs"></param>
-        /// <returns></returns>
+        /// <param name="connStringKeyValuePairs">The Dictionary of key-value pairs for the connection string.</param>
+        /// <returns>A <see langword="string"/> of the connection string.</returns>
         public static string MakeConnectionString(Dictionary<string, string> connStringKeyValuePairs) {
 
             string connString = "";
@@ -56,6 +57,12 @@ namespace Boury_M_07226_420_DA3_AS.Utils {
         }
 
 
+        /// <summary>
+        /// Static version of <see cref="GetDefaultFileDbConnection"/>.
+        /// Generates a <see cref="TConnection"/> instance for the in-project default file database.
+        /// </summary>
+        /// <returns>A <see cref="TConnection"/> instance.</returns>
+        /// <exception cref="FileNotFoundException">If the database files doesn't exist.</exception>
         public static TConnection GetDefaultFileDbConnectionStatic() {
 
             string dbFilePath = DirectoryUtils.CODEBASE_ROOT_DIRECTORY + Path.DirectorySeparatorChar + DEFAULT_DBFILE_NAME;
