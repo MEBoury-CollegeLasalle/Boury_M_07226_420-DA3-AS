@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -8,192 +7,44 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Boury_M_07226_420_DA3_AS.Utils {
-
-    /// <summary>
-    /// Class designed to easily create connection object instances for a specific ADO.NET data source.<br/>
-    /// Suggested use is to have a static instance of this somewhere that can be accessed by DAL classes.
-    /// </summary>
-    /// <typeparam name="TConnection"></typeparam> The type of the concrete ADO.NET connection objects to create. Must extend <see cref="DbConnection"/>
-    public class DbUtils<TConnection> where TConnection : DbConnection, new() {
-
-        private static readonly string DEFAULT_SERVER = ".\\SQL2019Express";
-        private static readonly string DEFAULT_SERVER_DB_NAME = "db_lab";
-        /// <summary>
-        /// Yes, its voluntary that I put those here knowing that the code goes to a public repository.
-        /// Don't try funky stuff, it wont work.
-        /// </summary>
-        private static readonly string DEFAULT_SERVER_USER = "<appDbUser>";
-        private static readonly string DEFAULT_SERVER_PASSWD = "<appDbPassword>";
-        private static readonly string DEFAULT_DBFILE_NAME = "lab.mdf";
+    internal class DbUtils {
 
 
-        /// <summary>
-        /// Runtime generated string of the absolute path to the execution directory
-        /// </summary>
-        public static readonly string EXECUTION_DIRECTORY = Path.GetFullPath(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
+        private static readonly string DEFAULT_DB_FILE_NAME = "lab.mdf";
 
-        /// <summary>
-        /// Runtime generated string of the absolute path to the code base directory
-        /// Useful during development to reach the project root when debugging or executing from the IDE
-        /// </summary>
-        public static readonly string CODEBASE_ROOT_DIRECTORY = Path.GetFullPath(EXECUTION_DIRECTORY + Path.DirectorySeparatorChar + ".." + Path.DirectorySeparatorChar + "..");
+        public static readonly string EXECUTION_DIRECTORY = 
+            Path.GetFullPath(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
 
-        private Type _type;
-        public Type ConnectionType {
-            get { return _type; }
-            private set { this._type = value; }
-        }
-
-        public DbUtils() {
-            this.ConnectionType = new TConnection().GetType();
-        }
-
-
-        #region Static Methods
-
+        public static readonly string DEFAULT_DB_FILE_PATH = Path.GetFullPath(
+            EXECUTION_DIRECTORY + Path.DirectorySeparatorChar + 
+            ".." + Path.DirectorySeparatorChar + 
+            ".." + Path.DirectorySeparatorChar + DEFAULT_DB_FILE_NAME);
 
 
         public static SqlConnection GetDefaultConnection() {
-            string filePath = DbUtils<SqlConnection>.CODEBASE_ROOT_DIRECTORY;
-            string server = ".\\SQL2019Express";
-            string integratedSecurity = "true";
-            string userInstance = "true";
 
-            string connectionString = $"Server={server};Integrated Security=" + integratedSecurity + 
-                ";AttachDbFilename=" + filePath + ";User Instance=" + userInstance + ";";
+            // option 1 : connection string as a literal string
+            string connectionStringLiteral = $"Server=.\\SQL2019EXPRESS; " +
+                $"Integrated_security=true; " +
+                $"AttachDbFilename={DEFAULT_DB_FILE_PATH}; " +
+                $"User Instance=true;";
+
+            // option 2 : connection string built from a dictionary
+            Dictionary<string, string> connStringKeyValuePairs = new Dictionary<string, string>();
+            connStringKeyValuePairs.Add("Server", ".\\SQL2019EXPRESS");
+            connStringKeyValuePairs.Add("Integrated_security", "true");
+            connStringKeyValuePairs.Add("AttachDbFilename", DEFAULT_DB_FILE_PATH);
+            connStringKeyValuePairs.Add("User Instance", "true");
+
+            string connectionString = "";
+            foreach (KeyValuePair<string, string> pair in connStringKeyValuePairs) {
+                connectionString += pair.Key + "=" + pair.Value + ";";
+            }
+
+
 
             SqlConnection connection = new SqlConnection(connectionString);
             return connection;
         }
-
-
-        /// <summary>
-        /// Generates a connection string based on a dictionary of key-value pairs representing the 
-        /// properties of the connection string to be generated.
-        /// </summary>
-        /// <param name="connStringKeyValuePairs">The Dictionary of key-value pairs for the connection string.</param>
-        /// <returns>A <see langword="string"/> of the connection string.</returns>
-        public static string MakeConnectionString(Dictionary<string, string> connStringKeyValuePairs) {
-
-            string connString = "";
-            foreach (KeyValuePair<string, string> pair in connStringKeyValuePairs) {
-                connString += pair.Key + "=" + pair.Value + ";";
-            }
-            return connString;
-
-        }
-
-
-        /// <summary>
-        /// Static version of <see cref="GetDefaultFileDbConnection"/>.
-        /// Generates a <see cref="TConnection"/> instance for the in-project default file database.
-        /// </summary>
-        /// <returns>A <see cref="TConnection"/> instance.</returns>
-        /// <exception cref="FileNotFoundException">If the database files doesn't exist.</exception>
-        public static TConnection GetDefaultFileDbConnectionStatic() {
-
-            string dbFilePath = DirectoryUtils.CODEBASE_ROOT_DIRECTORY + Path.DirectorySeparatorChar + DEFAULT_DBFILE_NAME;
-
-            if (!File.Exists(dbFilePath)) {
-                throw new FileNotFoundException($"Database file at [{dbFilePath}] does not exist.");
-            }
-
-            Dictionary<string, string> connDict = new Dictionary<string, string> {
-                { "Server", DEFAULT_SERVER },
-                { "Integrated security", "true" },
-                { "AttachDbFilename", Path.GetFullPath(dbFilePath) },
-                { "User Instance", "true" }
-            };
-            TConnection connection = new TConnection {
-                ConnectionString = MakeConnectionString(connDict)
-            };
-            return connection;
-        }
-
-
-        #endregion
-
-
-        #region Methods
-
-
-        /// <summary>
-        /// Creates and returns a connection object for the default database on the default server.
-        /// <br/><br/>
-        /// Uses <seealso cref="Testbed_420_DA3_AS.Utils.DbUtils.GetDefaultServerConnection"/>
-        /// </summary>
-        /// <returns></returns>
-        public TConnection GetDefaultDatabaseServerConnection() {
-            return GetDefaultServerConnection(DEFAULT_SERVER_DB_NAME);
-        }
-
-        /// <summary>
-        /// Creates and returns a connection object based on the passed database name and specific type.<br/>
-        /// The <paramref name="databaseName"/> string parameter represents the name of the database for the connection.
-        /// <br/><br/>
-        /// Uses <seealso cref="Testbed_420_DA3_AS.Utils.DbUtils.GetServerConnection"/>
-        /// </summary>
-        /// <param name="databaseName"></param> The name of the database on the default server.
-        /// <returns></returns>
-        public TConnection GetDefaultServerConnection(string databaseName) {
-            Dictionary<string, string> connDict = new Dictionary<string, string> {
-                { "Server", DEFAULT_SERVER },
-                { "Database", databaseName },
-                { "User ID", DEFAULT_SERVER_USER },
-                { "Password", DEFAULT_SERVER_PASSWD }
-            };
-            return GetServerConnection(connDict);
-
-        }
-
-        /// <summary>
-        /// Creates and returns a connection object for the default database file at the root of the project.
-        /// </summary>
-        /// <returns></returns>
-        public TConnection GetDefaultFileDbConnection() {
-            string dbFilePath = DirectoryUtils.CODEBASE_ROOT_DIRECTORY + Path.DirectorySeparatorChar + DEFAULT_DBFILE_NAME;
-
-            return GetFileDbConnection(dbFilePath);
-        }
-
-        /// <summary>
-        /// Creates and returns a connection object for a database file.
-        /// </summary>
-        /// <param name="dbFilePath"></param> The path to the database file.
-        /// <returns></returns>
-        /// <exception cref="FileNotFoundException">Thrown if the requested database file does not exist.</exception>
-        public TConnection GetFileDbConnection(string dbFilePath) {
-            if (!File.Exists(dbFilePath)) {
-                throw new FileNotFoundException($"Database file at [{dbFilePath}] does not exist.");
-            }
-
-            Dictionary<string, string> connDict = new Dictionary<string, string> {
-                { "Server", DEFAULT_SERVER },
-                { "Integrated security", "true" },
-                { "AttachDbFilename", Path.GetFullPath(dbFilePath) },
-                { "User Instance", "true" }
-            };
-
-            return this.GetServerConnection(connDict);
-        }
-
-        /// <summary>
-        /// Creates and returns a connection object based on the passed dictionary of key-value pairs and specific type.<br/>
-        /// The <paramref name="connStringKeyValuePairs"/> dictionary parameter represents the key=value pairs of the connection string.
-        /// </summary>
-        /// <param name="connStringKeyValuePairs"></param> Dictionnary of key-value pairs for the connection string.
-        /// <returns></returns>
-        public TConnection GetServerConnection(Dictionary<string, string> connStringKeyValuePairs) {
-
-            TConnection connection = new TConnection {
-                ConnectionString = MakeConnectionString(connStringKeyValuePairs)
-            };
-            return connection;
-        }
-
-
-        #endregion
-
-
     }
 }

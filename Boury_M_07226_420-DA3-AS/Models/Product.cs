@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 namespace Boury_M_07226_420_DA3_AS.Models {
     internal class Product : IModel<Product> {
 
+        private static readonly string DATABASE_TABLE_NAME = "dbo.Product";
+
         public int Id { get; protected set; }
         public long GtinCode { get; set; }
         public int QtyInStock { get; set; }
@@ -21,29 +23,42 @@ namespace Boury_M_07226_420_DA3_AS.Models {
         #region Constructors
 
 
-        public Product() {
+        public Product(int id) {
+            this.Id = id;
         }
 
-        public Product(string name) {
+        public Product(string name) : this(name, 0) {
+        }
+
+        public Product(string name, int qtyInStock) {
+        }
+
+        public Product(string name, int qtyInStock, long gtinCode) : this(name, qtyInStock) {
+        }
+
+        public Product(int qtyInStock, string name, string description) : this(name, qtyInStock, 0L, description) {
+        }
+
+        public Product(string name, int qtyInStock, long gtinCode, string description) {
             this.Name = name;
-            this.QtyInStock = 0;
-        }
-
-        protected Product(int qtyInStock, string name) {
             this.QtyInStock = qtyInStock;
-            this.Name = name;
-        }
-
-        protected Product(long gtinCode, int qtyInStock, string name) : this(qtyInStock, name) {
             this.GtinCode = gtinCode;
-        }
-
-        protected Product(int qtyInStock, string name, string description) : this(qtyInStock, name) {
             this.Description = description;
         }
 
-        protected Product(long gtinCode, int qtyInStock, string name, string description) : this(gtinCode, qtyInStock, name) {
-            this.Description = description;
+
+        #endregion
+
+
+
+        #region Static Methods
+
+
+
+        public static Product GetById(int id) {
+            Product product = new Product(id);
+            product.GetById();
+            return product;
         }
 
 
@@ -55,15 +70,16 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
 
         public void Delete() {
-            if (!(this.Id > 0)) {
+            if (this.Id == 0) {
                 // Id has not been set, it is initialized by default at 0;
-                throw new Exception("Cannot use method Product.Delete() : Id value is 0.");
+                throw new Exception($"Cannot use method {this.GetType().FullName}.Delete() : Id value is 0.");
             }
 
-            using (SqlConnection connection = DbUtils<SqlConnection>.GetDefaultFileDbConnectionStatic()) {
-                string statement = "DELETE FROM dbo.Product WHERE id = @id;";
+            using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
+                string statement = $"DELETE FROM {DATABASE_TABLE_NAME} WHERE Id = @id;";
                 SqlCommand cmd = connection.CreateCommand();
                 cmd.CommandText = statement;
+
                 SqlParameter param = cmd.CreateParameter();
                 param.ParameterName = "@id";
                 param.DbType = DbType.Int32;
@@ -75,21 +91,22 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
                 if (!(affectedRows > 0)) {
                     // No affected rows: no deletion occured -> row with matching Id not found
-                    throw new Exception($"Failed to delete Product: no database entry to update found for Id# {this.Id}.");
+                    throw new Exception($"Failed to delete {this.GetType().FullName}: no database entry found for Id# {this.Id}.");
                 }
             }
         }
 
         public Product GetById() {
-            if (!(this.Id > 0)) {
+            if (this.Id == 0) {
                 // Id has not been set, it is initialized by default at 0;
-                throw new Exception("Cannot use method Product.GetById() : Id value is 0.");
+                throw new Exception($"Cannot use method {this.GetType().FullName}.GetById() : Id value is 0.");
             }
 
-            using (SqlConnection connection = DbUtils<SqlConnection>.GetDefaultFileDbConnectionStatic()) {
-                string statement = "SELECT * FROM dbo.Product WHERE id = @id;";
+            using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
+                string statement = $"SELECT * FROM {DATABASE_TABLE_NAME} WHERE Id = @id;";
                 SqlCommand cmd = connection.CreateCommand();
                 cmd.CommandText = statement;
+
                 SqlParameter param = cmd.CreateParameter();
                 param.ParameterName = "@id";
                 param.DbType = DbType.Int32;
@@ -100,7 +117,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 SqlDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows) {
                     reader.Read();
-                    this.Id = reader.GetInt32(0);
+
                     // gtinCode in the database can be NULL
                     if (!reader.IsDBNull(1)) {
                         this.GtinCode = reader.GetInt64(1);
@@ -115,7 +132,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                     return this;
 
                 } else {
-                    throw new Exception($"No database entry for Product id# {this.Id}.");
+                    throw new Exception($"No database entry for {this.GetType().FullName} with id# {this.Id}.");
                 }
             }
         }
@@ -124,14 +141,14 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             if (this.Id > 0) {
                 // Id has been set, cannot insert a product with a specific Id without risking
                 // to mess up the database.
-                throw new Exception("Cannot use method Product.Insert() : Id value is not 0.");
+                throw new Exception($"Cannot use method {this.GetType().FullName}.Insert() : Id value is not 0 [{this.Id}].");
             }
 
-            using (SqlConnection connection = DbUtils<SqlConnection>.GetDefaultFileDbConnectionStatic()) {
+            using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
 
                 // Create the INSERT statement. We do not pass any Id value since this is insertion
                 // and the id is auto-generated by the database on insertion (identity).
-                string statement = "INSERT INTO dbo.Product (gtinCode, qtyInStock, name, description) " +
+                string statement = $"INSERT INTO {DATABASE_TABLE_NAME} (gtinCode, qtyInStock, name, description) " +
                     "VALUES (@gtinCode, @qtyInStock, @name, @description); SELECT CAST(SCOPE_IDENTITY() AS int);";
                 SqlCommand cmd = connection.CreateCommand();
                 cmd.CommandText = statement;
@@ -140,7 +157,11 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 SqlParameter gtinCodeParam = cmd.CreateParameter();
                 gtinCodeParam.ParameterName = "@gtinCode";
                 gtinCodeParam.DbType = DbType.Int64;
-                gtinCodeParam.Value = this.GtinCode;
+                if (this.GtinCode == 0L) {
+                    gtinCodeParam.Value = DBNull.Value;
+                } else {
+                    gtinCodeParam.Value = this.GtinCode;
+                }
                 cmd.Parameters.Add(gtinCodeParam);
 
                 SqlParameter qtyInStockParam = cmd.CreateParameter();
@@ -158,7 +179,11 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 SqlParameter descriptionParam = cmd.CreateParameter();
                 descriptionParam.ParameterName = "@description";
                 descriptionParam.DbType = DbType.String;
-                descriptionParam.Value = this.Description;
+                if (String.IsNullOrEmpty(this.Description)) {
+                    descriptionParam.Value = DBNull.Value;
+                } else {
+                    descriptionParam.Value = this.Description;
+                }
                 cmd.Parameters.Add(descriptionParam);
 
                 connection.Open();
@@ -170,16 +195,20 @@ namespace Boury_M_07226_420_DA3_AS.Models {
         }
 
         public Product Update() {
-            if (!(this.Id > 0)) {
+            if (this.Id == 0) {
                 // Id has not been set, cannot update a product with no specific Id to track the correct db row.
-                throw new Exception("Cannot use method Product.Update() : Id value is 0.");
+                throw new Exception($"Cannot use method {this.GetType().FullName}.Update() : Id value is 0.");
             }
 
-            using (SqlConnection connection = DbUtils<SqlConnection>.GetDefaultFileDbConnectionStatic()) {
+            using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
 
                 // Create the Update statement.
-                string statement = "UPDATE dbo.Product SET gtinCode = @gtinCode, qtyInStock = @qtyInStock, " +
-                    "name = @name, description = @description WHERE id = @id;";
+                string statement = $"UPDATE {DATABASE_TABLE_NAME} SET " +
+                    "gtinCode = @gtinCode, " +
+                    "qtyInStock = @qtyInStock, " +
+                    "name = @name, " +
+                    "description = @description " +
+                    "WHERE Id = @id;";
                 SqlCommand cmd = connection.CreateCommand();
                 cmd.CommandText = statement;
 
@@ -193,7 +222,11 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 SqlParameter gtinCodeParam = cmd.CreateParameter();
                 gtinCodeParam.ParameterName = "@gtinCode";
                 gtinCodeParam.DbType = DbType.Int64;
-                gtinCodeParam.Value = this.GtinCode;
+                if (this.GtinCode == 0L) {
+                    gtinCodeParam.Value = DBNull.Value;
+                } else {
+                    gtinCodeParam.Value = this.GtinCode;
+                }
                 cmd.Parameters.Add(gtinCodeParam);
 
                 SqlParameter qtyInStockParam = cmd.CreateParameter();
@@ -211,7 +244,11 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 SqlParameter descriptionParam = cmd.CreateParameter();
                 descriptionParam.ParameterName = "@description";
                 descriptionParam.DbType = DbType.String;
-                descriptionParam.Value = this.Description;
+                if (String.IsNullOrEmpty(this.Description)) {
+                    descriptionParam.Value = DBNull.Value;
+                } else {
+                    descriptionParam.Value = this.Description;
+                }
                 cmd.Parameters.Add(descriptionParam);
 
                 connection.Open();
@@ -220,7 +257,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 // Check that a row has been updated, if not, throw exception (no row with the id
                 // value found in the database, thus no update done)
                 if (!(affectedRows > 0)) {
-                    throw new Exception($"Failed to update Product: no database entry to update found for Id# {this.Id}.");
+                    throw new Exception($"Failed to update {this.GetType().FullName}: no database entry found for Id# {this.Id}.");
                 }
 
                 return this;

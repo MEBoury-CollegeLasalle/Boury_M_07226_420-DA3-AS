@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Boury_M_07226_420-DA3-AS")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Iterative lab project for course 420-DA3-AS")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Boury_M_07226_420-DA3-AS")]
-[assembly: AssemblyCopyright("Copyright ©  2022")]
+[assembly: AssemblyCopyright("Copyright ©  2022 Marc-Eric Boury")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

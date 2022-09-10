@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Boury_M_07226_420_DA3_AS.Models {
-    public interface IModel<TModel> where TModel : IModel<TModel>, new() {
+    public interface IModel<TModel> where TModel : IModel<TModel> {
 
         /// <summary>
         /// Inserts the values of a <see cref="IModel{TModel}"/> instance in the database as a

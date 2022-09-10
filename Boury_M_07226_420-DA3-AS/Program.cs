@@ -1,4 +1,5 @@
 ﻿using Boury_M_07226_420_DA3_AS.Utils;
+using Boury_M_07226_420_DA3_AS.Views;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -15,15 +16,9 @@ namespace Boury_M_07226_420_DA3_AS {
         /// </summary>
         [STAThread]
         static void Main() {
-            DbUtils<SqlConnection> connector = new DbUtils<SqlConnection>();
-            using (DbConnection connection = connector.GetDefaultFileDbConnection()) {
-                connection.Open();
-                Debug.WriteLine("Connection to lab.mdf opened successfully!");
-
-            }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new MainWindow());
         }
     }
 }
