@@ -26,6 +26,18 @@ namespace Boury_M_07226_420_DA3_AS.Utils {
         private static readonly string DEFAULT_SERVER_PASSWD = "<appDbPassword>";
         private static readonly string DEFAULT_DBFILE_NAME = "lab.mdf";
 
+
+        /// <summary>
+        /// Runtime generated string of the absolute path to the execution directory
+        /// </summary>
+        public static readonly string EXECUTION_DIRECTORY = Path.GetFullPath(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location));
+
+        /// <summary>
+        /// Runtime generated string of the absolute path to the code base directory
+        /// Useful during development to reach the project root when debugging or executing from the IDE
+        /// </summary>
+        public static readonly string CODEBASE_ROOT_DIRECTORY = Path.GetFullPath(EXECUTION_DIRECTORY + Path.DirectorySeparatorChar + ".." + Path.DirectorySeparatorChar + "..");
+
         private Type _type;
         public Type ConnectionType {
             get { return _type; }
@@ -38,6 +50,21 @@ namespace Boury_M_07226_420_DA3_AS.Utils {
 
 
         #region Static Methods
+
+
+
+        public static SqlConnection GetDefaultConnection() {
+            string filePath = DbUtils<SqlConnection>.CODEBASE_ROOT_DIRECTORY;
+            string server = ".\\SQL2019Express";
+            string integratedSecurity = "true";
+            string userInstance = "true";
+
+            string connectionString = $"Server={server};Integrated Security=" + integratedSecurity + 
+                ";AttachDbFilename=" + filePath + ";User Instance=" + userInstance + ";";
+
+            SqlConnection connection = new SqlConnection(connectionString);
+            return connection;
+        }
 
 
         /// <summary>
