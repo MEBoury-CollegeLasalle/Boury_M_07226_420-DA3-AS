@@ -1,4 +1,8 @@
-﻿using System;
+﻿/*
+ * (c) Copyright 2022 Marc-Eric Boury
+ */
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.ComponentModel;

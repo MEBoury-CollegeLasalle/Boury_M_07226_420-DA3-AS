@@ -1,4 +1,8 @@
-﻿using Boury_M_07226_420_DA3_AS.Models;
+﻿/*
+ * (c) Copyright 2022 Marc-Eric Boury
+ */
+
+using Boury_M_07226_420_DA3_AS.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
