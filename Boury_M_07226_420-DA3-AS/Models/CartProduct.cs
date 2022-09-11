@@ -68,7 +68,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             }
         }
 
-        public static List<CartProduct> GetByCartId(int cartId) {
+        public static List<CartProduct> GetAllByCartId(int cartId) {
             using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
                 string statement = $"SELECT * FROM {DATABASE_TABLE_NAME} " +
                     $"WHERE cartId = @cartId;";
@@ -94,7 +94,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             }
         }
 
-        public static List<CartProduct> GetByProductId(int productId) {
+        public static List<CartProduct> GetAllByProductId(int productId) {
             using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
                 string statement = $"SELECT * FROM {DATABASE_TABLE_NAME} " +
                     $"WHERE productId = @productId;";
