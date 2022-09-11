@@ -60,7 +60,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
 
         public Customer(int id) {
-
+            this.Id = id;
         }
 
         public Customer(string email) : this(email, "", "") {
