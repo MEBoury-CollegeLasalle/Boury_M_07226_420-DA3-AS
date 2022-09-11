@@ -3,8 +3,12 @@
  */
 
 using Boury_M_07226_420_DA3_AS.Models;
+using Boury_M_07226_420_DA3_AS.Utils;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,11 +38,23 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void UpdateCustomer(int customerId, string firstName, string lastName, string email) {
-            Customer customer = Customer.GetById(customerId);
-            customer.FirstName = firstName;
-            customer.LastName = lastName;
-            customer.Email = email;
-            customer.Update();
+            using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
+                connection.Open();
+                SqlTransaction transaction = connection.BeginTransaction();
+                try {
+                    Customer customer = Customer.GetById(customerId, transaction, true);
+                    customer.FirstName = firstName;
+                    customer.LastName = lastName;
+                    customer.Email = email;
+                    customer.Update(transaction);
+                    transaction.Commit();
+
+                } catch (Exception e) {
+                    transaction.Rollback();
+                    Debug.WriteLine(e.Message);
+                    Debug.WriteLine(e.StackTrace);
+                }
+            }
         }
 
         public void DeleteCustomer(int customerId) {
