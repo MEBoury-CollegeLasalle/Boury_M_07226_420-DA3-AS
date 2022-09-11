@@ -12,10 +12,45 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
         private static readonly string DATABASE_TABLE_NAME = "dbo.Customer";
 
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
+        private string _firstName;
+        private string _lastName;
+        private string _email;
+
+
+        public int Id { get; set; } 
+        public string FirstName { 
+            get { return this._firstName; } 
+            set {
+                if (value.Length > 50) {
+                    throw new Exception($"Field validation exception: length of value " +
+                        $"for {this.GetType().FullName}.FirstName must be less or equal " +
+                        $"than 50 charaters. Received: {value.Length}.");
+                }
+                this._firstName = value;
+            }
+        }
+        public string LastName {
+            get { return this._lastName; }
+            set {
+                if (value.Length > 50) {
+                    throw new Exception($"Field validation exception: length of value " +
+                        $"for {this.GetType().FullName}.LastName must be less or equal " +
+                        $"than 50 charaters. Received: {value.Length}.");
+                }
+                this._lastName = value;
+            }
+        }
+        public string Email {
+            get { return this._email; }
+            set {
+                if (value.Length > 128) {
+                    throw new Exception($"Field validation exception: length of value " +
+                        $"for {this.GetType().FullName}.Email must be less or equal " +
+                        $"than 128 charaters. Received: {value.Length}.");
+                }
+                this._email = value;
+            }
+        }
         public DateTime CreatedAt { get; set; }
         public DateTime DeletedAt { get; set; }
 

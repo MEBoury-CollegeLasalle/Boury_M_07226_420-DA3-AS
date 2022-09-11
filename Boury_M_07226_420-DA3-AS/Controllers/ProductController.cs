@@ -9,33 +9,28 @@ using System.Threading.Tasks;
 namespace Boury_M_07226_420_DA3_AS.Controllers {
     internal class ProductController : IController {
 
-        IModelView<Product> CreationView;
-        readonly IModelView<Product> DisplayView;
+        public void CreateProduct(string name, int qtyInStock) {
+            CreateProduct(name, qtyInStock, 0L);
+        }
 
-        public ProductController() {
-            this.DisplayView = new ProductConsoleDisplayView();
+        public void CreateProduct(string name, int qtyInStock, long gtinCode) {
+            CreateProduct(name, qtyInStock, 0L, "");
         }
 
         public void CreateProduct(string name, int qtyInStock, long gtinCode, string description) {
             Product newProduct = new Product(name, qtyInStock, gtinCode, description);
             newProduct.Insert();
-            this.DisplayProduct(newProduct);
-        }
-
-        public void DisplayProducts(List<Product> productList) {
-            foreach (Product product in productList) {
-                this.DisplayProduct(product);
-            }
         }
 
         public void DisplayProduct(int productId) {
             Product product = new Product(productId);
             product.GetById();
-            this.DisplayView.Render(product);
+            this.DisplayProduct(product);
         }
 
         public void DisplayProduct(Product product) {
-            this.DisplayView.Render(product);
+            // do something later in the course when we have views, or, if you want,
+            // dump the data to the console.
         }
 
         public void UpdateProduct(int productId, string name, int qtyInStock, long gtinCode, string description) {
@@ -46,6 +41,21 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
             product.Description = description;
             product.Update();
         }
+
+        public void DeleteProduct(int productId) {
+            Product product = new Product(productId);
+            this.DeleteProduct(product);
+        }
+
+        public void DeleteProduct(Product product) {
+            product.Delete();
+        }
+
+        //public void DisplayProducts(List<Product> productList) {
+        //    foreach (Product product in productList) {
+        //        this.DisplayProduct(product);
+        //    }
+        //}
 
     }
 }
