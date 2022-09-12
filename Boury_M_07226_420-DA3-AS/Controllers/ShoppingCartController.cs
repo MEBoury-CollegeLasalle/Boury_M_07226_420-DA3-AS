@@ -3,12 +3,16 @@
  */
 
 using Boury_M_07226_420_DA3_AS.Models;
+using Boury_M_07226_420_DA3_AS.Utils;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Boury_M_07226_420_DA3_AS.Controllers {
     internal class ShoppingCartController : IController {
@@ -42,11 +46,23 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void UpdateShoppingCart(int shoppingCartId, Customer customer, string billingAddress, string shippingAddress) {
-            ShoppingCart shoppingCart = ShoppingCart.GetById(shoppingCartId);
-            shoppingCart.Customer = customer;
-            shoppingCart.BillingAddress = billingAddress;
-            shoppingCart.ShippingAddress = shippingAddress;
-            shoppingCart.Update();
+            using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
+                connection.Open();
+                SqlTransaction transaction = connection.BeginTransaction();
+                try {
+                    ShoppingCart shoppingCart = ShoppingCart.GetById(shoppingCartId, transaction, true);
+                    shoppingCart.Customer = customer;
+                    shoppingCart.BillingAddress = billingAddress;
+                    shoppingCart.ShippingAddress = shippingAddress;
+                    shoppingCart.Update();
+                    transaction.Commit();
+
+                } catch (Exception e) {
+                    transaction.Rollback();
+                    Debug.WriteLine(e.Message);
+                    Debug.WriteLine(e.StackTrace);
+                }
+            }
         }
 
         public void DeleteShoppingCart(int shoppingCartId) {

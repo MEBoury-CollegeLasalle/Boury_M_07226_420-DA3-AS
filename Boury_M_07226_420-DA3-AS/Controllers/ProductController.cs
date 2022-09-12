@@ -3,9 +3,12 @@
  */
 
 using Boury_M_07226_420_DA3_AS.Models;
+using Boury_M_07226_420_DA3_AS.Utils;
 using Boury_M_07226_420_DA3_AS.Views;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +21,7 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void CreateProduct(string name, int qtyInStock, long gtinCode) {
-            CreateProduct(name, qtyInStock, 0L, "");
+            CreateProduct(name, qtyInStock, gtinCode, "");
         }
 
         public void CreateProduct(string name, int qtyInStock, long gtinCode, string description) {
@@ -38,12 +41,24 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void UpdateProduct(int productId, string name, int qtyInStock, long gtinCode, string description) {
-            Product product = Product.GetById(productId);
-            product.Name = name;
-            product.QtyInStock = qtyInStock;
-            product.GtinCode = gtinCode;
-            product.Description = description;
-            product.Update();
+            using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
+                connection.Open();
+                SqlTransaction transaction = connection.BeginTransaction();
+                try {
+                    Product product = Product.GetById(productId, transaction, true);
+                    product.Name = name;
+                    product.QtyInStock = qtyInStock;
+                    product.GtinCode = gtinCode;
+                    product.Description = description;
+                    product.Update();
+                    transaction.Commit();
+
+                } catch (Exception e) {
+                    transaction.Rollback();
+                    Debug.WriteLine(e.Message);
+                    Debug.WriteLine(e.StackTrace);
+                }
+            }
         }
 
         public void DeleteProduct(int productId) {
