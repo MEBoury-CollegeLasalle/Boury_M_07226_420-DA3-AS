@@ -83,9 +83,9 @@ namespace Boury_M_07226_420_DA3_AS.Models {
         }
 
 
-        public static Customer GetById(int id, SqlTransaction transaction, bool withexclusiveLock = false) {
+        public static Customer GetById(int id, SqlTransaction transaction, bool withExclusiveLock = false) {
             Customer customer = new Customer(id);
-            return customer.GetById(transaction, withexclusiveLock);
+            return customer.GetById(transaction, withExclusiveLock);
         }
 
 
@@ -143,20 +143,20 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             }
         }
 
-        public Customer GetById(SqlTransaction transaction, bool withexclusiveLock = false) {
+        public Customer GetById(SqlTransaction transaction, bool withExclusiveLock = false) {
             SqlCommand cmd = transaction.Connection.CreateCommand();
             cmd.Transaction = transaction;
-            return this.ExecuteGetByIdCommand(cmd, withexclusiveLock);
+            return this.ExecuteGetByIdCommand(cmd, withExclusiveLock);
         }
 
-        private Customer ExecuteGetByIdCommand(SqlCommand cmd, bool withexclusiveLock = false) {
+        private Customer ExecuteGetByIdCommand(SqlCommand cmd, bool withExclusiveLock = false) {
             if (this.Id == 0) {
                 // Id has not been set, it is initialized by default at 0;
                 throw new Exception($"Cannot use method {this.GetType().FullName}.ExecuteGetByIdCommand() : Id value is 0.");
             }
 
             string statement = $"SELECT * FROM {DATABASE_TABLE_NAME} " +
-                (withexclusiveLock ? "WITH  (XLOCK, ROWLOCK) " : "") +
+                (withExclusiveLock ? "WITH  (XLOCK, ROWLOCK) " : "") +
                 "WHERE Id = @id;";
             cmd.CommandText = statement;
 
@@ -213,7 +213,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             if (this.Id > 0) {
                 // Id has been set, cannot insert a product with a specific Id without risking
                 // to mess up the database.
-                throw new Exception($"Cannot use method {this.GetType().FullName}.Insert() : Id value is not 0 [{this.Id}].");
+                throw new Exception($"Cannot use method {this.GetType().FullName}.ExecuteInsertCommand() : Id value is not 0 [{this.Id}].");
             }
 
             // define the time of the creation (now). We will use it to set the value in the DB and
@@ -286,7 +286,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
         private Customer ExecuteUpdateCommand(SqlCommand cmd) {
             if (this.Id == 0) {
                 // Id has not been set, cannot update a product with no specific Id to track the correct db row.
-                throw new Exception($"Cannot use method {this.GetType().FullName}.Update() : Id value is 0.");
+                throw new Exception($"Cannot use method {this.GetType().FullName}.ExecuteUpdateCommand() : Id value is 0.");
             }
 
             // Create the Update statement.
