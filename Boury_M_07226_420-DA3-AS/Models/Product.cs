@@ -17,7 +17,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
         private static readonly string DATABASE_TABLE_NAME = "dbo.Product";
 
-        public int Id { get; protected set; }
+        public int Id { get; private set; }
         public long GtinCode { get; set; }
         public int QtyInStock { get; set; }
         public string Name { get; set; }

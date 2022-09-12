@@ -21,7 +21,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
         private string _email;
 
 
-        public int Id { get; set; } 
+        public int Id { get; private set; } 
         public string FirstName { 
             get { return this._firstName; } 
             set {

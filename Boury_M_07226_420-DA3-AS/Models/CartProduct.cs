@@ -16,7 +16,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
         private static readonly string DATABASE_TABLE_NAME = "dbo.CartProduct";
 
-        public int CartId { get; set; }
+        public int CartId { get; private set; }
         public int ProductId { get; set; }
         public int ProductQuantity { get; set; }
 
