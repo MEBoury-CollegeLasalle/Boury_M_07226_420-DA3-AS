@@ -73,6 +73,7 @@
     <Compile Include="Controllers\IController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\ShoppingCartController.cs" />
+    <Compile Include="Views\CustomerConsoleView.cs" />
     <Compile Include="Views\IModelView.cs" />
     <Compile Include="Views\ProductConsoleDisplayView.cs" />
     <Compile Include="Views\TestView2.cs">
