@@ -24,6 +24,8 @@ namespace Boury_M_07226_420_DA3_AS.Utils {
             ".." + Path.DirectorySeparatorChar + 
             ".." + Path.DirectorySeparatorChar + DEFAULT_DB_FILE_NAME);
 
+        public static readonly string DATETIME_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss.FFF";
+
 
         public static SqlConnection GetDefaultConnection() {
 

@@ -76,6 +76,7 @@
     <Compile Include="Views\CustomerConsoleView.cs" />
     <Compile Include="Views\IModelView.cs" />
     <Compile Include="Views\ProductConsoleDisplayView.cs" />
+    <Compile Include="Views\ShoppingCartConsoleView.cs" />
     <Compile Include="Views\TestView2.cs">
       <SubType>Component</SubType>
     </Compile>
