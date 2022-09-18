@@ -135,8 +135,14 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             if (reader.HasRows) {
                 reader.Read();
 
-                // I do not deal with the ID at all since we already have it.
-                this.Customer = new Customer(reader.GetInt32(1)).GetById();
+                // check if we have a transaction set in the command passed as parameter argument
+                if (cmd.Transaction != null) {
+                    // If there is a transaction, use it when retrieving the customer associated with the shopping cart
+                    this.Customer = new Customer(reader.GetInt32(1)).GetById(cmd.Transaction, withExclusiveLock);
+                } else {
+                    // If there is not, retrieve the customer without a transaction.
+                    this.Customer = new Customer(reader.GetInt32(1)).GetById();
+                }
                 this.BillingAddress = reader.GetString(2);
                 this.ShippingAddress = reader.GetString(3);
                 this.DateCreated = reader.GetDateTime(4);
