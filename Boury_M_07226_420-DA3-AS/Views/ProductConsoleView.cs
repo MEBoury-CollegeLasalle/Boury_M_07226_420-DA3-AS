@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Boury_M_07226_420_DA3_AS.Views {
-    internal class ProductConsoleDisplayView : IModelView<Product> {
+    internal class ProductConsoleView : IModelView<Product> {
 
-        public ProductConsoleDisplayView() { 
+        public ProductConsoleView() { 
         }
 
         public void Render(Product modelInstance) {

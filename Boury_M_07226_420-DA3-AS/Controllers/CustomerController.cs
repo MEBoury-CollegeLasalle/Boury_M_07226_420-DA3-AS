@@ -4,6 +4,7 @@
 
 using Boury_M_07226_420_DA3_AS.Models;
 using Boury_M_07226_420_DA3_AS.Utils;
+using Boury_M_07226_420_DA3_AS.Views;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,14 +17,25 @@ using System.Threading.Tasks;
 namespace Boury_M_07226_420_DA3_AS.Controllers {
     internal class CustomerController : IController {
 
+        private CustomerConsoleView consoleView;
 
-        public void CreateCustomer(string email) {
-            CreateCustomer(email, "", "");
+
+        public CustomerController() {
+            this.consoleView = new CustomerConsoleView();
         }
 
-        public void CreateCustomer(string email, string firstName, string lastName) {
+
+        public Customer CreateCustomer(string email) {
+            return CreateCustomer(email, "", "");
+        }
+
+        public Customer CreateCustomer(string email, string firstName, string lastName) {
             Customer customer = new Customer(email, firstName, lastName);
             customer.Insert();
+
+            Console.WriteLine("CREATED CUSTOMER:");
+            this.DisplayCustomer(customer);
+            return customer;
         }
 
         public void DisplayCustomer(int customerId) {
@@ -33,26 +45,35 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void DisplayCustomer(Customer customer) {
-            // do something later in the course when we have views, or, if you want,
-            // dump the data to the console.
+            this.consoleView.Render(customer);
         }
 
-        public void UpdateCustomer(int customerId, string firstName, string lastName, string email) {
+        public Customer UpdateCustomer(int customerId, string firstName, string lastName, string email) {
             using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
                 connection.Open();
                 SqlTransaction transaction = connection.BeginTransaction();
                 try {
                     Customer customer = Customer.GetById(customerId, transaction, true);
+
+                    Console.WriteLine("CUSTOMER TO UPDATE:");
+                    this.DisplayCustomer(customer);
+
                     customer.FirstName = firstName;
                     customer.LastName = lastName;
                     customer.Email = email;
                     customer.Update(transaction);
                     transaction.Commit();
 
+                    Console.WriteLine("UPDATED CUSTOMER:");
+                    this.DisplayCustomer(customer);
+
+                    return customer;
+
                 } catch (Exception e) {
                     transaction.Rollback();
                     Debug.WriteLine(e.Message);
                     Debug.WriteLine(e.StackTrace);
+                    throw e;
                 }
             }
         }
@@ -64,6 +85,9 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
 
         public void DeleteCustomer(Customer customer) {
             customer.Delete();
+
+            Console.WriteLine("DELETED CUSTOMER:");
+            this.DisplayCustomer(customer);
         }
     }
 }

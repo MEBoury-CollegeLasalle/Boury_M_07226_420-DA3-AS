@@ -16,17 +16,30 @@ using System.Threading.Tasks;
 namespace Boury_M_07226_420_DA3_AS.Controllers {
     internal class ProductController : IController {
 
-        public void CreateProduct(string name, int qtyInStock) {
-            CreateProduct(name, qtyInStock, 0L);
+        private ProductConsoleView consoleView;
+
+        public ProductController() {
+            this.consoleView = new ProductConsoleView();
         }
 
-        public void CreateProduct(string name, int qtyInStock, long gtinCode) {
-            CreateProduct(name, qtyInStock, gtinCode, "");
+
+
+        public Product CreateProduct(string name, int qtyInStock) {
+            return CreateProduct(name, qtyInStock, 0L);
         }
 
-        public void CreateProduct(string name, int qtyInStock, long gtinCode, string description) {
+        public Product CreateProduct(string name, int qtyInStock, long gtinCode) {
+            return CreateProduct(name, qtyInStock, gtinCode, "");
+        }
+
+        public Product CreateProduct(string name, int qtyInStock, long gtinCode, string description) {
             Product newProduct = new Product(name, qtyInStock, gtinCode, description);
             newProduct.Insert();
+
+            Console.WriteLine("CREATED PRODUCT:");
+            this.DisplayProduct(newProduct);
+
+            return newProduct;
         }
 
         public void DisplayProduct(int productId) {
@@ -36,16 +49,19 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void DisplayProduct(Product product) {
-            // do something later in the course when we have views, or, if you want,
-            // dump the data to the console.
+            this.consoleView.Render(product);
         }
 
-        public void UpdateProduct(int productId, string name, int qtyInStock, long gtinCode, string description) {
+        public Product UpdateProduct(int productId, string name, int qtyInStock, long gtinCode, string description) {
             using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
                 connection.Open();
                 SqlTransaction transaction = connection.BeginTransaction();
                 try {
                     Product product = Product.GetById(productId, transaction, true);
+
+                    Console.WriteLine("PRODUCT TO UPDATE:");
+                    this.DisplayProduct(product);
+
                     product.Name = name;
                     product.QtyInStock = qtyInStock;
                     product.GtinCode = gtinCode;
@@ -53,10 +69,16 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
                     product.Update();
                     transaction.Commit();
 
+                    Console.WriteLine("UPDATED PRODUCT:");
+                    this.DisplayProduct(product);
+
+                    return product;
+
                 } catch (Exception e) {
                     transaction.Rollback();
                     Debug.WriteLine(e.Message);
                     Debug.WriteLine(e.StackTrace);
+                    throw e;
                 }
             }
         }
@@ -68,6 +90,9 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
 
         public void DeleteProduct(Product product) {
             product.Delete();
+
+            Console.WriteLine("DELETED PRODUCT:");
+            this.DisplayProduct(product);
         }
 
         //public void DisplayProducts(List<Product> productList) {

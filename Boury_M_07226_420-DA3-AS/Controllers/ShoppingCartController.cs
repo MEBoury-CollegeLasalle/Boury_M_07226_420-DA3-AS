@@ -4,6 +4,7 @@
 
 using Boury_M_07226_420_DA3_AS.Models;
 using Boury_M_07226_420_DA3_AS.Utils;
+using Boury_M_07226_420_DA3_AS.Views;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -17,15 +18,26 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 namespace Boury_M_07226_420_DA3_AS.Controllers {
     internal class ShoppingCartController : IController {
 
-        public void CreateShoppingCart(int customerId, string billingAddress, string shippingAddress) {
-            Customer customer = new Customer(customerId);
-            customer.GetById();
-            CreateShoppingCart(customer, billingAddress, shippingAddress);
+        private ShoppingCartConsoleView consoleView;
+
+        public ShoppingCartController() {
+            this.consoleView = new ShoppingCartConsoleView();
         }
 
-        public void CreateShoppingCart(Customer customer, string billingAddress, string shippingAddress) {
+        public ShoppingCart CreateShoppingCart(int customerId, string billingAddress, string shippingAddress) {
+            Customer customer = new Customer(customerId);
+            customer.GetById();
+            return CreateShoppingCart(customer, billingAddress, shippingAddress);
+        }
+
+        public ShoppingCart CreateShoppingCart(Customer customer, string billingAddress, string shippingAddress) {
             ShoppingCart newShoppingCart = new ShoppingCart(customer, billingAddress, shippingAddress);
             newShoppingCart.Insert();
+
+            Console.WriteLine("CREATED SHOPPING CART:");
+            this.DisplayShoppingCart(newShoppingCart);
+
+            return newShoppingCart;
         }
 
         public void DisplayShoppingCart(int shoppingCartId) {
@@ -35,32 +47,41 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void DisplayShoppingCart(ShoppingCart shoppingCart) {
-            // do something later in the course when we have views, or, if you want,
-            // dump the data to the console.
+            this.consoleView.Render(shoppingCart);
         }
 
-        public void UpdateShoppingCart(int shoppingCartId, int customerId, string billingAddress, string shippingAddress) {
+        public ShoppingCart UpdateShoppingCart(int shoppingCartId, int customerId, string billingAddress, string shippingAddress) {
             Customer customer = new Customer(customerId);
             customer.GetById();
-            UpdateShoppingCart(shoppingCartId, customer, billingAddress, shippingAddress);
+            return UpdateShoppingCart(shoppingCartId, customer, billingAddress, shippingAddress);
         }
 
-        public void UpdateShoppingCart(int shoppingCartId, Customer customer, string billingAddress, string shippingAddress) {
+        public ShoppingCart UpdateShoppingCart(int shoppingCartId, Customer customer, string billingAddress, string shippingAddress) {
             using (SqlConnection connection = DbUtils.GetDefaultConnection()) {
                 connection.Open();
                 SqlTransaction transaction = connection.BeginTransaction();
                 try {
                     ShoppingCart shoppingCart = ShoppingCart.GetById(shoppingCartId, transaction, true);
+
+                    Console.WriteLine("SHOPPING CART TO UPDATE:");
+                    this.DisplayShoppingCart(shoppingCart);
+
                     shoppingCart.Customer = customer;
                     shoppingCart.BillingAddress = billingAddress;
                     shoppingCart.ShippingAddress = shippingAddress;
                     shoppingCart.Update();
                     transaction.Commit();
 
+                    Console.WriteLine("UPDATED SHOPPING CART:");
+                    this.DisplayShoppingCart(shoppingCart);
+
+                    return shoppingCart;
+
                 } catch (Exception e) {
                     transaction.Rollback();
                     Debug.WriteLine(e.Message);
                     Debug.WriteLine(e.StackTrace);
+                    throw e;
                 }
             }
         }
@@ -72,6 +93,9 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
 
         public void DeleteShoppingCart(ShoppingCart shoppingCart) {
             shoppingCart.Delete();
+
+            Console.WriteLine("DELETED SHOPPING CART:");
+            this.DisplayShoppingCart(shoppingCart);
         }
     }
 }
