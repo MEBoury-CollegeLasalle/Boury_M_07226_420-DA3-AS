@@ -16,13 +16,34 @@ using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace Boury_M_07226_420_DA3_AS.Controllers {
-    internal class ShoppingCartController : IController {
+    public class ShoppingCartController : IController {
 
-        private ShoppingCartConsoleView consoleView;
+        private readonly SqlConnection connection;
+        private ShoppingCartGridView shoppingCartGridView;
 
-        public ShoppingCartController() {
-            this.consoleView = new ShoppingCartConsoleView();
+        public ShoppingCartController(SqlConnection connection) {
+            this.connection = connection;
         }
+
+
+        #region DataSet Methods
+
+        public void OpenShoppingCartGridViewWindow() {
+            if (this.shoppingCartGridView == null
+                || this.shoppingCartGridView.GetType() != typeof(ShoppingCartGridView)
+                ) {
+                this.shoppingCartGridView = new ShoppingCartGridView(this.connection, this);
+            }
+            this.shoppingCartGridView.OpenWindow();
+        }
+
+        public void UpdateShoppingCartDataSet() {
+            Product.UpdateDataTable(this.connection);
+        }
+
+        #endregion
+
+
 
         public ShoppingCart CreateShoppingCart(int customerId, string billingAddress, string shippingAddress) {
             Customer customer = new Customer(customerId);
@@ -47,7 +68,7 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void DisplayShoppingCart(ShoppingCart shoppingCart) {
-            this.consoleView.Render(shoppingCart);
+            // this.consoleView.Render(shoppingCart);
         }
 
         public ShoppingCart UpdateShoppingCart(int shoppingCartId, int customerId, string billingAddress, string shippingAddress) {

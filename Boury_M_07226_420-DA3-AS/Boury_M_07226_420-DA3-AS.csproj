@@ -73,16 +73,18 @@
     <Compile Include="Controllers\IController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Controllers\ShoppingCartController.cs" />
-    <Compile Include="Services\TestService.cs" />
-    <Compile Include="Views\CustomerConsoleView.cs" />
-    <Compile Include="Views\IModelView.cs" />
-    <Compile Include="Views\ProductConsoleView.cs" />
-    <Compile Include="Views\ShoppingCartConsoleView.cs" />
-    <Compile Include="Views\TestView2.cs">
-      <SubType>Component</SubType>
+    <Compile Include="Views\CustomerGridView.cs">
+      <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Views\TestView1.cs">
-      <SubType>Component</SubType>
+    <Compile Include="Views\CustomerGridView.Designer.cs">
+      <DependentUpon>CustomerGridView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Views\IModelDisplayView.cs" />
+    <Compile Include="Views\ProductGridView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\ProductGridView.Designer.cs">
+      <DependentUpon>ProductGridView.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.cs">
       <SubType>Form</SubType>
@@ -101,6 +103,12 @@
     <Compile Include="Utils\DbUtils.cs" />
     <Compile Include="Utils\DirectoryUtils.cs" />
     <Compile Include="Views\IView.cs" />
+    <Compile Include="Views\ShoppingCartGridView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Views\ShoppingCartGridView.Designer.cs">
+      <DependentUpon>ShoppingCartGridView.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -110,14 +118,17 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="Views\TestView2.resx">
-      <DependentUpon>TestView2.cs</DependentUpon>
+    <EmbeddedResource Include="Views\CustomerGridView.resx">
+      <DependentUpon>CustomerGridView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Views\TestView1.resx">
-      <DependentUpon>TestView1.cs</DependentUpon>
+    <EmbeddedResource Include="Views\ProductGridView.resx">
+      <DependentUpon>ProductGridView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Views\ShoppingCartGridView.resx">
+      <DependentUpon>ShoppingCartGridView.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -132,12 +143,8 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <Content Include="lab.mdf" />
-    <Content Include="lab_log.ldf">
-      <DependentUpon>lab.mdf</DependentUpon>
-    </Content>
+    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">

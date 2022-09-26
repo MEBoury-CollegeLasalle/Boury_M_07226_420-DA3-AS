@@ -14,13 +14,32 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Boury_M_07226_420_DA3_AS.Controllers {
-    internal class ProductController : IController {
+    public class ProductController : IController {
 
-        private ProductConsoleView consoleView;
+        private readonly SqlConnection connection;
+        private ProductGridView productGridView;
 
-        public ProductController() {
-            this.consoleView = new ProductConsoleView();
+        public ProductController(SqlConnection connection) {
+            this.connection = connection;
         }
+
+
+        #region DataSet Methods
+
+        public void OpenProductGridViewWindow() {
+            if (this.productGridView == null
+                || this.productGridView.GetType() != typeof(ProductGridView)
+                ) {
+                this.productGridView = new ProductGridView(this.connection, this);
+            }
+            this.productGridView.OpenWindow();
+        }
+
+        public void UpdateProductDataSet() {
+            Product.UpdateDataTable(this.connection);
+        }
+
+        #endregion
 
 
 
@@ -49,7 +68,7 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void DisplayProduct(Product product) {
-            this.consoleView.Render(product);
+            //this.consoleView.Render(product);
         }
 
         public Product UpdateProduct(int productId, string name, int qtyInStock, long gtinCode, string description) {
