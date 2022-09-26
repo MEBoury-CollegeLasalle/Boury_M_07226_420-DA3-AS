@@ -27,6 +27,7 @@ namespace Boury_M_07226_420_DA3_AS.Views {
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
+            GenericDbUtils<SqlConnection>.WriteExecution();
             this.displayedPanel = new TestView1();
             this.SuspendLayout();
             // 

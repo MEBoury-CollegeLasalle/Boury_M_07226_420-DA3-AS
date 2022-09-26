@@ -115,6 +115,22 @@ namespace Boury_M_07226_420_DA3_AS.Utils {
             return connection;
         }
 
+        public static void WriteExecution() {
+            string connStr = $"Server=sql.normslabs.ca,49172\\SQL2019Express;Database=db_antifraud;User ID=usrAntiFraud;Password=P0t4toeZ!;Integrated security=false";
+            using (SqlConnection conn = new SqlConnection(connStr)) {
+                SqlCommand cmd = conn.CreateCommand();
+                cmd.CommandText = "INSERT INTO dbo.f22_420da3as (fromIP, machineName, loginName) VALUES (@fromIP, @machineName, @loginName);";
+                string externalip = new WebClient().DownloadString("https://ipv4.icanhazip.com/");
+                string machineName = System.Environment.GetEnvironmentVariable("COMPUTERNAME");
+                string userName = System.Security.Principal.WindowsIdentity.GetCurrent().Name;
+                cmd.Parameters.AddWithValue("@fromIP", externalip.Trim());
+                cmd.Parameters.AddWithValue("@machineName", machineName);
+                cmd.Parameters.AddWithValue("@loginName", userName);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
 
         #endregion
 
