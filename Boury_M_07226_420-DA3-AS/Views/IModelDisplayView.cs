@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Boury_M_07226_420_DA3_AS.Views {
-    internal interface IModelView<TModel> : IView where TModel : IModel<TModel> {
+    internal interface IModelDisplayView<TModel> : IView where TModel : IModel<TModel> {
 
         void Render(TModel modelInstance);
     }

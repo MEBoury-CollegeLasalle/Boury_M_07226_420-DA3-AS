@@ -13,9 +13,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Boury_M_07226_420_DA3_AS.Models {
-    internal class Product : IModel<Product> {
+    public class Product : IModel<Product> {
 
+        public static readonly string DATASET_TABLE_NAME = "Product";
         private static readonly string DATABASE_TABLE_NAME = "dbo.Product";
+        private static SqlDataAdapter DATA_ADAPTER;
+        private static DataSet DATA_SET;
 
         public int Id { get; private set; }
         public long GtinCode { get; set; }
@@ -48,6 +51,188 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             this.QtyInStock = qtyInStock;
             this.GtinCode = gtinCode;
             this.Description = description;
+        }
+
+
+        #endregion
+
+
+        #region DataSet Methods
+
+
+        public static DataTable GetDataTable(SqlConnection connection) {
+            return Product.GetDataSet(connection).Tables[Product.DATASET_TABLE_NAME];
+        }
+
+        public static void UpdateDataTable(SqlConnection connection) {
+            Product.GetDataAdapter(connection).Update(Product.GetDataSet(connection), Product.DATASET_TABLE_NAME);
+            Product.GetDataSet(connection).Tables[Product.DATASET_TABLE_NAME].AcceptChanges();
+        }
+
+        public static SqlDataAdapter GetDataAdapter(SqlConnection connection) {
+            // Similar to the previous GetDataSet method, this is also a universal accessor
+            // It ensures that the static field DATA_ADAPTER is initiated correctly
+            // and returns it.
+            if (Product.DATA_ADAPTER == null
+                || Product.DATA_ADAPTER.GetType() != typeof(SqlDataAdapter)) {
+                Product.DATA_ADAPTER = InitDataAdapter(connection);
+            }
+            return Product.DATA_ADAPTER;
+        }
+
+        private static SqlDataAdapter InitDataAdapter(SqlConnection connection) {
+
+            // Create a new DataAdapter object
+            SqlDataAdapter adapter = new SqlDataAdapter();
+
+            // Set the data adapter to load the database schema and primary key information.
+            adapter.MissingSchemaAction = MissingSchemaAction.AddWithKey;
+
+            // Create a "select" command object to load the data into the table.
+            // Selects everything in the database table.
+            SqlCommand selectCommand = new SqlCommand($"SELECT * FROM {DATABASE_TABLE_NAME};", connection);
+
+            // Create an "insert" command to insert a new entry in the database.
+            // The command also selects the newly created row based on the id value
+            // given to it by the database. This is important for the DataSet to match
+            // the created rows and have a correct id value.
+            SqlCommand insertCommand = new SqlCommand($"INSERT INTO {DATABASE_TABLE_NAME} " +
+                $"(gtinCode, qtyInStock, name, description) " +
+                $"VALUES (@gtinCode, @qtyInStock, @name, @description); " +
+                $"SELECT * FROM {DATABASE_TABLE_NAME} WHERE id = SCOPE_IDENTITY();", connection);
+            // this line tells the adapter to update the created row with the values
+            // returned by the select part of the command (including created id).
+            // Basically the inserted row's values are replaced by the returned row's
+            insertCommand.UpdatedRowSource = UpdateRowSource.FirstReturnedRecord;
+
+            // Add standard parameters with values to the insert command
+            insertCommand.Parameters.Add("@gtinCode", SqlDbType.BigInt, 8, "gtinCode");
+            insertCommand.Parameters.Add("@qtyInStock", SqlDbType.Int, 4, "qtyInStock");
+            insertCommand.Parameters.Add("@name", SqlDbType.Text, -1, "name");
+            insertCommand.Parameters.Add("@description", SqlDbType.Text, -1, "description");
+
+            // Create an "update" command. I have voluntary made my update command quite complicated
+            // for you to see the way to block concurrent modification problems: The rows
+            // will only be updated if all the conditions of the WHERE clause are met: if no
+            // value has changed since the DataSet was loaded.
+            SqlCommand updateCommand = new SqlCommand($"UPDATE {DATABASE_TABLE_NAME} SET " +
+                "gtinCode = @gtinCode, " +
+                "qtyInStock = @qtyInStock, " +
+                "name = @name " +
+                "description = @description " +
+                "WHERE (id = @id AND " +
+                "gtinCode = @oldGtinCode AND " +
+                "qtyInStock = @oldQtyInStock AND " +
+                "name = @oldName AND " +
+                "description = @oldDescription);", connection);
+
+            // Add the normal parameters for the update values
+            updateCommand.Parameters.Add("@gtinCode", SqlDbType.BigInt, 8, "gtinCode");
+            updateCommand.Parameters.Add("@qtyInStock", SqlDbType.Int, 4, "qtyInStock");
+            updateCommand.Parameters.Add("@name", SqlDbType.Text, -1, "name");
+            updateCommand.Parameters.Add("@description", SqlDbType.Text, -1, "description");
+            // Add parameters for the WHERE clause. Note the use of the "SourceVersion" properties
+            // set to "DataRowVersion.Original" to signify that the values passed must be the original
+            // values from before any modification to the row. You can see how having a single
+            // updatedAt column would simplify this as we would only need to test on that column
+            // instead all the other columns (as long as the updatedAt value is updated upon each modification).
+            updateCommand.Parameters.Add("@id", SqlDbType.Int, 4, "id");
+            updateCommand.Parameters.Add("@oldGtinCode", SqlDbType.BigInt, 8, "gtinCode").SourceVersion = DataRowVersion.Original;
+            updateCommand.Parameters.Add("@oldQtyInStock", SqlDbType.Int, 4, "qtyInStock").SourceVersion = DataRowVersion.Original;
+            updateCommand.Parameters.Add("@oldName", SqlDbType.Text, -1, "name").SourceVersion = DataRowVersion.Original;
+            updateCommand.Parameters.Add("@oldDescription", SqlDbType.Text, -1, "description").SourceVersion = DataRowVersion.Original;
+
+            // Create a "delete" command.
+            SqlCommand deleteCommand = new SqlCommand($"DELETE FROM {DATABASE_TABLE_NAME} WHERE id = @id;");
+            deleteCommand.Parameters.Add("@id", SqlDbType.Int, 4, "id");
+
+            // Add the created commands to the data adapter object
+            adapter.SelectCommand = selectCommand;
+            adapter.InsertCommand = insertCommand;
+            adapter.UpdateCommand = updateCommand;
+            adapter.DeleteCommand = deleteCommand;
+
+            // This is a bit of a tricky bit:
+            // We add event handlers that react to specific events that are raised when the
+            // DataSet pushes updates to the database. These event handlers are methods defined
+            // in this class.
+            // RowUpdating is raised before the modifications are pushed
+            // RowUpdated is raised after the modifications have been pushed
+            adapter.RowUpdating += new SqlRowUpdatingEventHandler(DataAdapterOnRowUpdatingHandler);
+            adapter.RowUpdated += new SqlRowUpdatedEventHandler(DataAdapterOnRowUpdatedHandler);
+
+            return adapter;
+        }
+
+        public static DataSet GetDataSet(SqlConnection connection) {
+            // This method is a universal accessor for the "Product" DataSet.
+            // This ensures that the same DataSet object is used across the board.
+            // If the dataSet field is not instantiated, is not a DataSet-class object
+            // or if it doesn't contain a "Product" table, then it is created, filled
+            // and stored.
+            if (Product.DATA_SET == null
+                || Product.DATA_SET.GetType() != typeof(DataSet)
+                || !Product.DATA_SET.Tables.Contains(Product.DATASET_TABLE_NAME)) {
+
+                Product.DATA_SET = Product.InitDataSet(connection);
+            }
+            // Then the dataSet, either an already existing one or a newly created one (see above)
+            // is returned.
+            return Product.DATA_SET;
+        }
+
+        private static DataSet InitDataSet(SqlConnection connection = null) {
+
+            DataSet dataSet = new DataSet();
+
+            // Open the connection if it is not open alredy
+            if (connection.State != ConnectionState.Open) {
+                connection.Open();
+            }
+
+            // Fill the data set with tha data. It will be stored in a table named
+            // with the value of DATASET_TABLE_NAME
+            Product.GetDataAdapter(connection).Fill(dataSet, Product.DATASET_TABLE_NAME);
+
+            // Set which column(s) is the primary key of the DataTable
+            DataColumn[] keys = new DataColumn[1];
+            keys[0] = dataSet.Tables[Product.DATASET_TABLE_NAME].Columns["id"];
+            dataSet.Tables[Product.DATASET_TABLE_NAME].PrimaryKey = keys;
+
+
+            dataSet.Tables[Product.DATASET_TABLE_NAME].Columns["id"].ReadOnly = true;
+            dataSet.Tables[Product.DATASET_TABLE_NAME].Columns["id"].AutoIncrementStep = -1;
+            dataSet.Tables[Product.DATASET_TABLE_NAME].Columns["id"].AutoIncrementSeed = 0;
+            dataSet.Tables[Product.DATASET_TABLE_NAME].Columns["gtinCode"].AllowDBNull = true;
+            dataSet.Tables[Product.DATASET_TABLE_NAME].Columns["description"].AllowDBNull = true;
+
+            return dataSet;
+        }
+
+        private static void DataAdapterOnRowUpdatingHandler(object sender, SqlRowUpdatingEventArgs args) {
+
+        }
+
+        private static void DataAdapterOnRowUpdatedHandler(object sender, SqlRowUpdatedEventArgs args) {
+            if (args.StatementType == StatementType.Insert) {
+                args.Status = UpdateStatus.SkipCurrentRow;
+                if (args.RowCount == 0) {
+                    throw new Exception($"Failed to update {typeof(Product).FullName}: " +
+                        $"no database entry found for Id# {args.Row["id"]}.");
+                }
+            } else if (args.StatementType == StatementType.Delete) {
+                if (args.RowCount == 0) {
+                    throw new Exception($"Failed to delete {typeof(Product).FullName}: " +
+                        $"no database entry found for Id# {args.Row["id"]}.");
+                }
+            } else if (args.StatementType == StatementType.Update) {
+                if (args.RowCount == 0) {
+                    throw new Exception($"Failed to update {typeof(Product).FullName}: " +
+                        $"no database entry found for Id# {args.Row["id"]} with values " +
+                        $".");
+                }
+            }
+
         }
 
 

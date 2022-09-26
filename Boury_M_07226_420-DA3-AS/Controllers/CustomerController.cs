@@ -15,14 +15,38 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Boury_M_07226_420_DA3_AS.Controllers {
-    internal class CustomerController : IController {
+    public class CustomerController : IController {
 
-        private CustomerConsoleView consoleView;
+        private readonly SqlConnection connection;
+        private CustomerGridView customerGridView;
 
 
-        public CustomerController() {
-            this.consoleView = new CustomerConsoleView();
+        public CustomerController(SqlConnection connection) {
+            this.connection = connection;
         }
+
+
+        #region DataSet Methods
+
+        public void OpenCustomerGridViewWindow() {
+            if (this.customerGridView == null 
+                || this.customerGridView.GetType() != typeof(CustomerGridView)
+                ) {
+                this.customerGridView = new CustomerGridView(this.connection, this);
+            }
+            this.customerGridView.OpenWindow();
+        }
+
+        public void UpdateCustomerDataSet() {
+            Customer.UpdateDataTable(this.connection);
+        }
+
+        #endregion
+
+
+
+
+
 
 
         public Customer CreateCustomer(string email) {
@@ -45,7 +69,7 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
         }
 
         public void DisplayCustomer(Customer customer) {
-            this.consoleView.Render(customer);
+            //this.consoleView.Render(customer);
         }
 
         public Customer UpdateCustomer(int customerId, string firstName, string lastName, string email) {
