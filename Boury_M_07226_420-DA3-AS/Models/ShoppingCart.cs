@@ -209,10 +209,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
         private static void DataAdapterOnRowUpdatedHandler(object sender, SqlRowUpdatedEventArgs args) {
             if (args.StatementType == StatementType.Insert) {
                 args.Status = UpdateStatus.SkipCurrentRow;
-                if (args.RowCount == 0) {
-                    throw new Exception($"Failed to update {typeof(ShoppingCart).FullName}: " +
-                        $"no database entry found for Id# {args.Row["id"]}.");
-                }
+
             } else if (args.StatementType == StatementType.Delete) {
                 if (args.RowCount == 0) {
                     throw new Exception($"Failed to delete {typeof(ShoppingCart).FullName}: " +
@@ -221,8 +218,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             } else if (args.StatementType == StatementType.Update) {
                 if (args.RowCount == 0) {
                     throw new Exception($"Failed to update {typeof(ShoppingCart).FullName}: " +
-                        $"no database entry found for Id# {args.Row["id"]} with values " +
-                        $".");
+                        $"no database entry found for Id# {args.Row["id"]} with matching originalvalues.");
                 }
             }
 
@@ -230,7 +226,6 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
 
         #endregion
-
 
 
 
