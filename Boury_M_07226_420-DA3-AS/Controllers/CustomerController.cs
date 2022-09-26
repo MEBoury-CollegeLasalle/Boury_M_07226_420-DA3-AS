@@ -28,22 +28,31 @@ namespace Boury_M_07226_420_DA3_AS.Controllers {
 
         #region DataSet Methods
 
+        /// <summary>
+        /// This method ensures that the current <see cref="CustomerController"/> instance has
+        /// a <see cref="CustomerGridView"/> set and opens it afterwards.
+        /// </summary>
         public void OpenCustomerGridViewWindow() {
+            // Check that there is a CustomerGridView object in the appropriate field.
+            // If not, creates and sets it.
             if (this.customerGridView == null 
                 || this.customerGridView.GetType() != typeof(CustomerGridView)
                 ) {
                 this.customerGridView = new CustomerGridView(this.connection, this);
             }
+            // Opens the window
             this.customerGridView.OpenWindow();
         }
 
+        /// <summary>
+        /// This method triggers the push of modifications to the data source via a call to
+        /// <see cref="Customer.UpdateDataTable(SqlConnection)"/>.
+        /// </summary>
         public void UpdateCustomerDataSet() {
             Customer.UpdateDataTable(this.connection);
         }
 
         #endregion
-
-
 
 
 
