@@ -154,7 +154,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
         private static SqlDataAdapter InitDataAdapter(SqlConnection connection) {
 
             // Create a new DataAdapter object
-            SqlDataAdapter adapter = new SqlDataAdapter {
+            SqlDataAdapter adapter = new SqlDataAdapter() {
                 // Set the data adapter to load the database schema and primary key information if it is missing.
                 MissingSchemaAction = MissingSchemaAction.AddWithKey
             };
@@ -218,7 +218,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             updateCommand.Parameters.Add("@oldEmail", SqlDbType.NVarChar, 128, "email").SourceVersion = DataRowVersion.Original;
 
             // Create a "delete" command.
-            SqlCommand deleteCommand = new SqlCommand($"DELETE FROM {DATABASE_TABLE_NAME} WHERE id = @id;");
+            SqlCommand deleteCommand = new SqlCommand($"DELETE FROM {DATABASE_TABLE_NAME} WHERE id = @id;", connection);
             deleteCommand.Parameters.Add("@id", SqlDbType.Int, 4, "id");
 
             // Add the created commands to the data adapter object
