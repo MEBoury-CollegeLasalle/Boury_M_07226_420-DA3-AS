@@ -200,7 +200,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 "WHERE (id = @id AND " +
                 "firstName = @oldFirstName AND " +
                 "lastName = @oldLastName AND " +
-                "email = oldEmail);", connection);
+                "email = @oldEmail);", connection);
 
             // Add the normal parameters for the update values
             updateCommand.Parameters.Add("@firstName", SqlDbType.NVarChar, 50, "firstName");
