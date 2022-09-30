@@ -212,6 +212,7 @@ namespace Boury_M_07226_420_DA3_AS.Models {
             // values from before any modification to the row. You can see how having a single
             // updatedAt column would simplify this as we would only need to test on that column
             // instead all the other columns (as long as the updatedAt value is updated for each modification).
+
             updateCommand.Parameters.Add("@id", SqlDbType.Int, 4, "id");
             updateCommand.Parameters.Add("@oldFirstName", SqlDbType.NVarChar, 50, "firstName").SourceVersion = DataRowVersion.Original;
             updateCommand.Parameters.Add("@oldLastName", SqlDbType.NVarChar, 50, "lastName").SourceVersion = DataRowVersion.Original;
@@ -280,12 +281,15 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
             // Fill the data set with tha data. It will be stored in a table named
             // with the value of the DATASET_TABLE_NAME static field.
-            Customer.GetDataAdapter(connection).Fill(dataSet, DATASET_TABLE_NAME);
+            SqlDataAdapter adapter = Customer.GetDataAdapter(connection);
+            adapter.Fill(dataSet, Customer.DATASET_TABLE_NAME);
 
             // Set which column(s) is the primary key of the DataTable for this class
             DataColumn[] keys = new DataColumn[1];
-            keys[0] = dataSet.Tables[Customer.DATASET_TABLE_NAME].Columns["id"];
-            dataSet.Tables[Customer.DATASET_TABLE_NAME].PrimaryKey = keys;
+            DataTable customerTable = dataSet.Tables[Customer.DATASET_TABLE_NAME];
+            DataColumn idColumn = customerTable.Columns["id"];
+            keys[0] = idColumn;
+            customerTable.PrimaryKey = keys;
 
             // Set specific modifiers so the grid view blocks some abilities or so the update
             // allows empty values etc.
