@@ -338,13 +338,13 @@ namespace Boury_M_07226_420_DA3_AS.Models {
 
             } else if (args.StatementType == StatementType.Delete) {
                 // Throw an exception if no row has been deleted when performing a deletion.
-                if (args.RowCount == 0) {
+                if (args.RecordsAffected == 0) {
                     throw new Exception($"Failed to delete {typeof(Customer).FullName}: " +
                         $"no database entry found for Id# {args.Row["id"]}.");
                 }
             } else if (args.StatementType == StatementType.Update) {
                 // throw an exception when no row has been updated when performing an update.
-                if (args.RowCount == 0) {
+                if (args.RecordsAffected == 0) {
                     throw new Exception($"Failed to update {typeof(Customer).FullName}: " +
                         $"no database entry found for Id# {args.Row["id"]} with matching originalvalues.");
                 }

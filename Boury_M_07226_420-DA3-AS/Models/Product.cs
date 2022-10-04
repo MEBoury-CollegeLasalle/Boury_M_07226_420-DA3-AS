@@ -219,12 +219,12 @@ namespace Boury_M_07226_420_DA3_AS.Models {
                 args.Status = UpdateStatus.SkipCurrentRow;
 
             } else if (args.StatementType == StatementType.Delete) {
-                if (args.RowCount == 0) {
+                if (args.RecordsAffected == 0) {
                     throw new Exception($"Failed to delete {typeof(Product).FullName}: " +
                         $"no database entry found for Id# {args.Row["id"]}.");
                 }
             } else if (args.StatementType == StatementType.Update) {
-                if (args.RowCount == 0) {
+                if (args.RecordsAffected == 0) {
                     throw new Exception($"Failed to update {typeof(Product).FullName}: " +
                         $"no database entry found for Id# {args.Row["id"]} with matching originalvalues.");
                 }
